@@ -1,76 +1,82 @@
-<<<<<<< HEAD
 # 👻 ghots-coder v3.0
-### Motor de Análisis Estático Predictivo & Dashboard Visual
 
-**ghots-coder** es una herramienta de ingeniería de software diseñada para el análisis profundo de proyectos web. Escanea el código base, mapea el flujo lógico y despliega un diagnóstico en tiempo real directamente en el navegador.
+### Predictive Static Analysis Engine & Real-Time Dashboard
 
-> **Optimización de Hardware:** Diseñado específicamente para ejecutarse en entornos de recursos limitados (4GB RAM / Hardware 2011+) sin comprometer la profundidad del análisis.
-
----
-
-## 🛠️ Capacidades del Motor
-El motor realiza un escaneo multilingüe detectando fallos críticos:
-
-| Extensión | Tipo de Análisis |
-| :--- | :--- |
-| **.js / .ts** | Errores de sintaxis, variables huérfanas y flujo lógico. |
-| **.html** | Etiquetas sin cerrar y atributos faltantes. |
-| **.json** | Errores de parseo y validación de estructura. |
-| **.css** | Llaves desbalanceadas y selectores vacíos. |
+**ghots-coder** es un motor de análisis estático de alto rendimiento diseñado para la inspección profunda de arquitecturas web. Proporciona diagnósticos inmediatos sobre la integridad del código, optimizando el ciclo de vida de desarrollo mediante una interfaz visual reactiva.
 
 ---
 
-## 🚀 Instalación y Uso
+## 🛠️ Especificaciones Técnicas y Compatibilidad
 
-### Opción 1: Instalación Rápida (Recomendado)
-Para usar el comando `ghots` globalmente:
-```bash
+El motor ha sido desarrollado bajo un paradigma de **eficiencia de recursos**, garantizando estabilidad en hardware diverso:
+
+* **Sistemas Operativos:** macOS (Intel/Silicon), Windows 10/11, Linux (Ubuntu/Debian/Arch).
+* **Hardware Legacy:** Optimizado para procesadores de doble núcleo y 4GB de RAM (Sistemas de 2011 en adelante).
+* **Sistemas Recientes:** Modo de alta frecuencia para arquitecturas multinúcleo.
+
+---
+
+## 🚀 Guía de Instalación Universal
+
+### Requisito Previo
+Tener instalado **Node.js** (Versión 14.x o superior).
+
+#### 🍎 macOS / 🐧 Linux
+1. Clone el repositorio:
+   ```bash
+   git clone [https://github.com/Carlosabrego136/ghots-coder.git](https://github.com/Carlosabrego136/ghots-coder.git)
+   cd ghots-coder
+Instale dependencias y vincule el binario:
+
+Bash
+
+npm install
+sudo npm link
+🪟 Windows
+Descargue el repositorio o use Git Bash:
+
+Bash
+
+git clone [https://github.com/Carlosabrego136/ghots-coder.git](https://github.com/Carlosabrego136/ghots-coder.git)
+cd ghots-coder
+Ejecute con privilegios de Administrador:
+
+Bash
+
+npm install
 npm link
-Opción 2: Ejecución Directa
+💻 Ejecución y Despliegue
+Una vez vinculado globalmente, el comando ghots está disponible en cualquier terminal del sistema:
+
+Inicie el motor en la raíz de su proyecto:
+
 Bash
 
 ghots
-El sistema desplegará un menú interactivo, iniciará el servidor automáticamente y abrirá el dashboard.
+Acceda al dashboard generado en: http://127.0.0.1:8080/ghots.html
 
-📊 Dashboard Visual
-Accede a https://www.google.com/search?q=http://127.0.0.1:8080/ghots.html para visualizar:
+⚖️ Términos, Condiciones y Aviso Legal
+El uso de ghots-coder implica la aceptación de los siguientes términos de propiedad intelectual y responsabilidad:
 
-Navegación: Archivos ordenados por severidad.
+1. Propiedad Intelectual
+Todo el código fuente, algoritmos de análisis y activos visuales contenidos en este repositorio son propiedad exclusiva de Faiiryz / Teocalli-PX7. Se prohíbe la reproducción, distribución o modificación no autorizada con fines comerciales sin consentimiento explícito.
 
-Visor: Código anotado (Rojo: Error | Amarillo: Warning).
+2. Acciones Legales y Jurisdicción
+Cualquier intento de ingeniería inversa, plagio o uso indebido de la marca ghots-coder para fines malintencionados será sujeto a las acciones legales pertinentes bajo las leyes de propiedad intelectual internacionales y las normativas vigentes en el Estado de México, México.
 
-Feedback: Icono reactivo al estado de salud del código.
+3. Limitación de Responsabilidad
+El software se proporciona "tal cual", sin garantías de ningún tipo. Faiiryz no se hace responsable de daños derivados del uso del software, incluyendo pero no limitado a la pérdida de datos o interrupciones de negocio.
 
-🧠 Gestión de Rendimiento
-Modo Legacy (< 5GB RAM): Escaneo cada 10 segundos.
+📁 Arquitectura del Sistema
+motor.js: Núcleo de procesamiento lógico y detección de patrones.
 
-Modo Ultra (≥ 5GB RAM): Escaneo cada 5 segundos.
+bin.js: Capa de abstracción para la interfaz de línea de comandos.
 
-📁 Estructura
-bin.js: Interfaz CLI.
+ghots.html: Motor de visualización de datos de análisis.
 
-motor.js: Núcleo de análisis.
-
-ghots.html: Dashboard Web.
-
-⚖️ Licencia y Autoría
-Licencia: MIT
-
-Desarrollador: Juan Carlos Pavón Ábrego (Faiiryz)
+👨‍💻 Autoría
+Lead Developer: Faiiryz
 
 Organización: Teocalli-PX7
-=======
-👻 ghots-coder v3.0Motor de Análisis Estático Predictivo & Dashboard Visualghots-coder es una herramienta de ingeniería de software diseñada para el análisis profundo de proyectos web. Escanea el código base, mapea el flujo lógico y despliega un diagnóstico en tiempo real directamente en el navegador.Optimización de Hardware: Diseñado específicamente para ejecutarse en entornos de recursos limitados (4GB RAM / Hardware 2011+) sin comprometer la profundidad del análisis.🛠️ Capacidades del MotorEl motor realiza un escaneo multilingüe detectando fallos críticos y lógica de negocio:ExtensiónTipo de Análisis.js / .tsErrores de sintaxis, variables huérfanas, flujo lógico (if, return, try/catch)..htmlEtiquetas sin cerrar, atributos alt/href faltantes y eventos en línea..jsonErrores de parseo y validación de campos en package.json..cssLlaves desbalanceadas, propiedades vacías y uso de !important.🚀 InstalaciónOpción 1: Desarrollo LocalBashgit clone https://github.com/Carlosabrego136/ghots-coder.git
-cd ghots-coder
-npm install
-Opción 2: Herramienta CLI GlobalPara ejecutar ghots desde cualquier directorio de tu sistema:Bashnpm link
-Si encuentras errores de permisos en macOS:Bashsudo npm link
-💻 Modos de UsoInterfaz de Línea de Comandos (CLI)Una vez instalado globalmente, navega a cualquier proyecto y ejecuta:Bashghots
-El sistema desplegará un menú interactivo para seleccionar el archivo raíz, iniciará el servidor automáticamente y abrirá el dashboard en tu navegador.Ejecución Manual (Modo Dual)Si prefieres control total mediante terminales separadas:Motor: node motor.js index.jsServidor: npx http-server . -p 8080 --cors -s📊 Dashboard VisualAccede a http://127.0.0.1:8080/ghots.html para visualizar:Panel de Navegación: Archivos ordenados por severidad de errores.Visor de Código: Líneas anotadas con resaltado dinámico (Rojo: Error | Amarillo: Advertencia).Diagnóstico Técnico: Explicación detallada con posición exacta de línea y columna.Feedback Visual: Icono reactivo que refleja el estado de salud actual del código.🧠 Gestión de Rendimiento (Smart Engine)El motor detecta la memoria disponible y ajusta la frecuencia de escaneo para proteger el hardware:Modo Legacy (< 5GB RAM): Escaneo cada 10 segundos (Optimizado para Mac 2011).Modo Ultra (≥ 5GB RAM): Escaneo cada 5 segundos para respuesta inmediata.📁 Estructura del ProyectoPlaintextghots-coder/
-├── bin.js         # Punto de entrada de la interfaz CLI
-├── motor.js       # Núcleo del motor de análisis
-├── ghots.html     # Interfaz del Dashboard Web
-├── package.json   # Configuración y dependencias
-└── README.md      # Documentación técnica
-⚖️ Licencia y AutoríaLicencia: MITDesarrollador: Juan Carlos Pavón Ábrego (Faiiryz)
->>>>>>> style: clean repository and update professional README
+
+Licencia: Propietaria con fines de exhibición técnica (Ver LICENSE para detalles).
