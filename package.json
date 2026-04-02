@@ -1,0 +1,25 @@
+{
+  "name": "ghots-coder",
+  "version": "3.0.0",
+  "description": "Motor de análisis estático predictivo con dashboard visual. By Faiiryz.",
+  "main": "motor.js",
+  "bin": {
+    "ghots": "./bin.js"
+  },
+  "scripts": {
+    "start": "node bin.js",
+    "motor": "node motor.js",
+    "server": "http-server . -p 8080 --cors -s",
+    "link-global": "npm link"
+  },
+  "author": "Juan Carlos Pavón Ábrego (Faiiryz)",
+  "license": "MIT",
+  "dependencies": {
+    "acorn": "^8.16.0",
+    "estraverse": "^5.3.0",
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

@@ -1,0 +1,5 @@
+node_modules/
+node-v14.17.0-darwin-x64/
+.DS_Store
+*.tgz
+analisis.json

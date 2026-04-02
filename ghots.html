@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GHOTS-CODER | OBSERVER 👻</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #03030c;
+      --panel: #07070f;
+      --panel2: #0c0c1a;
+      --border: #151528;
+      --border2: #1e1e38;
+      --green: #00ff9d;
+      --red: #ff3a3a;
+      --yellow: #ffb020;
+      --blue: #3fa9f5;
+      --purple: #7c5cfa;
+      --text: #c8d0e0;
+      --dim: #454560;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      font-size: 13px;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 4px;
+    }
+
+    /* ══════════════════════════════
+   SIDEBAR
+══════════════════════════════ */
+    #sidebar {
+      width: 280px;
+      min-width: 280px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .brand {
+      padding: 18px 16px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ghost-emoji {
+      font-size: 26px;
+      transition: all 0.3s;
+    }
+
+    .brand-text h2 {
+      font-size: 12px;
+      letter-spacing: 4px;
+      color: var(--green);
+    }
+
+    .brand-text p {
+      font-size: 9px;
+      color: var(--dim);
+      letter-spacing: 2px;
+      margin-top: 2px;
+    }
+
+    /* Status */
+    #statusBadge {
+      margin: 12px;
+      padding: 9px 12px;
+      border-radius: 7px;
+      border: 1px solid rgba(0, 255, 157, 0.3);
+      background: rgba(0, 255, 157, 0.06);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.4s;
+    }
+
+    #statusBadge.warn {
+      border-color: rgba(255, 176, 32, 0.4);
+      background: rgba(255, 176, 32, 0.07);
+      color: var(--yellow);
+    }
+
+    #statusBadge.error {
+      border-color: rgba(255, 58, 58, 0.4);
+      background: rgba(255, 58, 58, 0.08);
+      color: var(--red);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: blink 1.6s infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.3
+      }
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      padding: 0 12px 12px;
+    }
+
+    .stat {
+      background: var(--panel2);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 8px 4px;
+      text-align: center;
+    }
+
+    .stat .n {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat .l {
+      font-size: 7px;
+      color: var(--dim);
+      margin-top: 3px;
+      letter-spacing: 1px;
+    }
+
+    .stat.s-files .n {
+      color: var(--purple);
+    }
+
+    .stat.s-errors .n {
+      color: var(--red);
+    }
+
+    .stat.s-warns .n {
+      color: var(--yellow);
+    }
+
+    /* Sección archivos */
+    .section-label {
+      padding: 8px 12px;
+      font-size: 8px;
+      letter-spacing: 3px;
+      color: var(--dim);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sync-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: blink 1s infinite;
+    }
+
+    .sync-dot.off {
+      background: #333;
+      animation: none;
+    }
+
+    #fileList {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .file-row {
+      padding: 8px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-left: 3px solid transparent;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+      transition: all 0.12s;
+    }
+
+    .file-row:hover {
+      background: rgba(255, 255, 255, 0.03);
+      border-left-color: var(--border2);
+    }
+
+    .file-row.active {
+      background: rgba(0, 255, 157, 0.07);
+      border-left-color: var(--green);
+    }
+
+    .file-row.has-error {
+      border-left-color: var(--red) !important;
+    }
+
+    .file-row.has-warn {
+      border-left-color: var(--yellow);
+    }
+
+    .ext-badge {
+      font-size: 7px;
+      font-weight: 700;
+      padding: 2px 4px;
+      border-radius: 3px;
+      letter-spacing: 1px;
+      flex-shrink: 0;
+    }
+
+    .e-js {
+      background: rgba(255, 214, 0, 0.12);
+      color: #ffd600;
+    }
+
+    .e-ts {
+      background: rgba(63, 169, 245, 0.12);
+      color: var(--blue);
+    }
+
+    .e-html {
+      background: rgba(255, 100, 0, 0.12);
+      color: #ff6400;
+    }
+
+    .e-css {
+      background: rgba(124, 92, 250, 0.12);
+      color: var(--purple);
+    }
+
+    .e-json {
+      background: rgba(0, 255, 157, 0.10);
+      color: var(--green);
+    }
+
+    .e-file {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--dim);
+    }
+
+    .file-name {
+      font-size: 10px;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .count-badge {
+      font-size: 8px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .cb-err {
+      background: rgba(255, 58, 58, 0.2);
+      color: var(--red);
+    }
+
+    .cb-warn {
+      background: rgba(255, 176, 32, 0.15);
+      color: var(--yellow);
+    }
+
+    .cb-ok {
+      background: rgba(0, 255, 157, 0.1);
+      color: var(--green);
+    }
+
+    .sidebar-footer {
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+      font-size: 8px;
+      color: var(--dim);
+    }
+
+    /* ══════════════════════════════
+   PANEL PRINCIPAL
+══════════════════════════════ */
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 90% 5%, #0e0420 0%, var(--bg) 65%);
+    }
+
+    /* Top bar */
+    #topBar {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .top-label {
+      font-size: 8px;
+      color: var(--dim);
+      letter-spacing: 2px;
+    }
+
+    #activeFileName {
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    #lastUpdate {
+      margin-left: auto;
+      font-size: 8px;
+      color: var(--dim);
+    }
+
+    /* Content split */
+    #content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ── CODE PANEL ── */
+    #codePanel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+    }
+
+    .panel-hdr {
+      padding: 8px 16px;
+      font-size: 8px;
+      letter-spacing: 3px;
+      color: var(--dim);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 20px;
+      flex-shrink: 0;
+    }
+
+    #codeScroll {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+
+    .code-line {
+      display: flex;
+      min-height: 20px;
+      min-width: max-content;
+      align-items: stretch;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.012);
+    }
+
+    .code-line:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .code-line.line-error {
+      background: rgba(255, 58, 58, 0.06);
+      border-left: 2px solid var(--red);
+    }
+
+    .code-line.line-warn {
+      background: rgba(255, 176, 32, 0.05);
+      border-left: 2px solid var(--yellow);
+    }
+
+    .code-line.line-info {
+      background: rgba(63, 169, 245, 0.04);
+      border-left: 2px solid var(--blue);
+    }
+
+    .code-line.line-flow {
+      background: rgba(0, 255, 157, 0.025);
+    }
+
+    .ln {
+      width: 48px;
+      min-width: 48px;
+      padding: 3px 10px 3px 0;
+      text-align: right;
+      font-size: 10px;
+      color: #222240;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .code-line.line-error .ln {
+      color: var(--red);
+    }
+
+    .code-line.line-warn .ln {
+      color: var(--yellow);
+    }
+
+    .lc {
+      flex: 1;
+      padding: 3px 10px 3px 4px;
+      font-size: 11px;
+      color: #9098b0;
+      white-space: pre;
+      min-width: 0;
+    }
+
+    .ann {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 12px 2px 8px;
+      max-width: 320px;
+      flex-shrink: 0;
+    }
+
+    .ann-tag {
+      font-size: 7px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .at-err {
+      background: rgba(255, 58, 58, 0.2);
+      color: var(--red);
+    }
+
+    .at-warn {
+      background: rgba(255, 176, 32, 0.15);
+      color: var(--yellow);
+    }
+
+    .at-info {
+      background: rgba(63, 169, 245, 0.15);
+      color: var(--blue);
+    }
+
+    .at-green {
+      background: rgba(0, 255, 157, 0.12);
+      color: var(--green);
+    }
+
+    .at-red {
+      background: rgba(255, 58, 58, 0.15);
+      color: var(--red);
+    }
+
+    .at-blue {
+      background: rgba(63, 169, 245, 0.15);
+      color: var(--blue);
+    }
+
+    .at-orange {
+      background: rgba(255, 140, 0, 0.15);
+      color: #ff8c00;
+    }
+
+    .ann-msg {
+      font-size: 9px;
+      color: var(--dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── ISSUES PANEL ── */
+    #issuesPanel {
+      width: 380px;
+      min-width: 340px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-hdr2 {
+      padding: 8px 16px;
+      font-size: 8px;
+      letter-spacing: 3px;
+      color: var(--dim);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    #issueCount {
+      margin-left: auto;
+      background: rgba(255, 58, 58, 0.2);
+      color: var(--red);
+      border-radius: 8px;
+      padding: 1px 7px;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 4px;
+      padding: 7px 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .ftab {
+      padding: 3px 9px;
+      border-radius: 4px;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.12s;
+      color: var(--dim);
+    }
+
+    .ftab:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .ftab.on {
+      background: rgba(0, 255, 157, 0.1);
+      border-color: rgba(0, 255, 157, 0.3);
+      color: var(--green);
+    }
+
+    .ftab.on-err {
+      background: rgba(255, 58, 58, 0.1);
+      border-color: rgba(255, 58, 58, 0.3);
+      color: var(--red);
+    }
+
+    .ftab.on-warn {
+      background: rgba(255, 176, 32, 0.1);
+      border-color: rgba(255, 176, 32, 0.3);
+      color: var(--yellow);
+    }
+
+    #issuesList {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .issue {
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      cursor: pointer;
+      display: flex;
+      gap: 10px;
+      transition: background 0.1s;
+    }
+
+    .issue:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .issue-ico {
+      font-size: 13px;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+
+    .issue-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .issue-type {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .it-e {
+      color: var(--red);
+    }
+
+    .it-w {
+      color: var(--yellow);
+    }
+
+    .it-i {
+      color: var(--blue);
+    }
+
+    .issue-msg {
+      font-size: 10px;
+      color: var(--text);
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .issue-loc {
+      font-size: 8px;
+      color: var(--dim);
+      margin-top: 4px;
+    }
+
+    /* Empty states */
+    .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 14px;
+      opacity: 0.3;
+      text-align: center;
+    }
+
+    .empty .big {
+      font-size: 44px;
+    }
+
+    .empty p {
+      font-size: 9px;
+      letter-spacing: 2px;
+    }
+
+    /* Ghost animations */
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0) rotate(0)
+      }
+
+      25% {
+        transform: translateX(-4px) rotate(-5deg)
+      }
+
+      75% {
+        transform: translateX(4px) rotate(5deg)
+      }
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-5px)
+      }
+    }
+
+    @keyframes fastfloat {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-3px)
+      }
+    }
+
+    .ghost-ok {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .ghost-warn {
+      animation: fastfloat 1.2s ease-in-out infinite;
+    }
+
+    .ghost-error {
+      animation: shake 0.45s ease-in-out infinite;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="brand">
+      <span class="ghost-emoji" id="ghostEmoji">👻</span>
+      <div class="brand-text">
+        <h2>GHOTS-CODER</h2>
+        <p>OBSERVER v4.0 · BY FAIIRYZ</p>
+      </div>
+    </div>
+
+    <div id="statusBadge">
+      <div class="status-dot"></div>
+      <span id="statusText">SINCRONIZANDO...</span>
+    </div>
+
+    <div class="stats">
+      <div class="stat s-files">
+        <div class="n" id="sFiles">—</div>
+        <div class="l">ARCHIVOS</div>
+      </div>
+      <div class="stat s-errors">
+        <div class="n" id="sErrors">—</div>
+        <div class="l">ERRORES</div>
+      </div>
+      <div class="stat s-warns">
+        <div class="n" id="sWarns">—</div>
+        <div class="l">AVISOS</div>
+      </div>
+    </div>
+
+    <div class="section-label">
+      <span>ARCHIVOS DEL PROYECTO</span>
+      <div class="sync-dot off" id="syncDot"></div>
+    </div>
+
+    <div id="fileList">
+      <div class="empty" style="height:200px">
+        <div class="big">📂</div>
+        <p>ESPERANDO DATOS<br>DEL MOTOR...</p>
+      </div>
+    </div>
+
+    <div class="sidebar-footer" id="footerMeta">FAIIRYZ IDE · MOTOR v4.0</div>
+  </aside>
+
+  <!-- PANEL PRINCIPAL -->
+  <main id="main">
+    <div id="topBar">
+      <div>
+        <div class="top-label">ARCHIVO ACTIVO</div>
+        <div id="activeFileName">— Selecciona un archivo del panel izquierdo —</div>
+      </div>
+      <div id="lastUpdate">Sin datos aún</div>
+    </div>
+
+    <div id="content">
+      <!-- Código -->
+      <div id="codePanel">
+        <div class="panel-hdr">
+          <span>CODIGO FUENTE</span>
+          <span id="codeInfo" style="color:var(--dim)"></span>
+        </div>
+        <div id="codeScroll">
+          <div class="empty">
+            <div class="big">👻</div>
+            <p>HAZ CLICK EN UN ARCHIVO<br>DEL PANEL IZQUIERDO</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Issues -->
+      <div id="issuesPanel">
+        <div class="panel-hdr2">
+          <span>DIAGNOSTICO DETALLADO</span>
+          <span id="issueCount">0</span>
+        </div>
+        <div class="filter-bar">
+          <div class="ftab on" id="fAll" onclick="setFilter('all')">TODOS</div>
+          <div class="ftab" id="fErr" onclick="setFilter('error')">ERRORES</div>
+          <div class="ftab" id="fWarn" onclick="setFilter('warn')">AVISOS</div>
+          <div class="ftab" id="fInfo" onclick="setFilter('info')">INFO</div>
+        </div>
+        <div id="issuesList">
+          <div class="empty">
+            <div class="big">🔍</div>
+            <p>SELECCIONA UN ARCHIVO<br>PARA VER SU DIAGNOSTICO</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ═══════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════
+var allData      = null;
+var currentFile  = null;
+var filter       = 'all';
+var lastStr      = null;
+var lastFileStr  = null;
+var lastActiveStr = null;
+
+// ═══════════════════════════
+// FETCH LOOP
+// ═══════════════════════════
+function fetchData() {
+  fetch('analisis.json?t=' + Date.now(), {
+    cache: 'no-store',
+    headers: { 'Cache-Control': 'no-cache' }
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('offline');
+    return r.json();
+  })
+  .then(function(data) {
+    // Solo re-renderizar si cambiaron errores/advertencias o archivos
+    var s = (data.summary ? data.summary.totalErrors + '-' + data.summary.totalWarnings + '-' + data.summary.total : '') + (data.timestamp||'').substring(0,16);
+    if (s !== lastStr) {
+      lastStr = s;
+      allData = data;
+      renderAll(data);
+    }
+    setOnline(true);
+  })
+  .catch(function() {
+    setOnline(false);
+  });
+}
+
+function setOnline(yes) {
+  var d = document.getElementById('syncDot');
+  d.className = 'sync-dot' + (yes ? '' : ' off');
+}
+
+setInterval(fetchData, 3000);
+fetchData();
+
+// ═══════════════════════════
+// RENDER PRINCIPAL
+// ═══════════════════════════
+function renderAll(data) {
+  // Siempre actualizar solo los numeros y el ghost — sin redibujar codigo
+  var sum = data.summary || {};
+  document.getElementById('sFiles').textContent  = sum.total        != null ? sum.total        : 0;
+  document.getElementById('sErrors').textContent = sum.totalErrors  != null ? sum.totalErrors  : 0;
+  document.getElementById('sWarns').textContent  = sum.totalWarnings!= null ? sum.totalWarnings: 0;
+  document.getElementById('footerMeta').textContent = 'PROYECTO: ' + (data.project||'—');
+  document.getElementById('lastUpdate').textContent = 'ACT: ' + new Date(data.timestamp).toLocaleTimeString('es-MX');
+  updateGhost(data.status);
+
+  // Lista de archivos: solo redibujar si cambio el numero de archivos o errores
+  var newFileStr = (data.files||[]).map(function(f){ return f.name+f.errorCount+f.warningCount; }).join('|');
+  if (newFileStr !== lastFileStr) {
+    lastFileStr = newFileStr;
+    renderFileList(data.files || []);
+  }
+
+  // Vista de codigo: solo actualizar si el archivo activo tiene cambios nuevos
+  if (currentFile && data.files) {
+    var f = findFile(data.files, currentFile);
+    if (f) {
+      var fStr = f.name + f.errorCount + f.warningCount + f.source.length;
+      if (fStr !== lastActiveStr) {
+        lastActiveStr = fStr;
+        renderFileView(f);
+      }
+    }
+  }
+}
+
+function updateGhost(status) {
+  var g  = document.getElementById('ghostEmoji');
+  var b  = document.getElementById('statusBadge');
+  var t  = document.getElementById('statusText');
+
+  g.className = 'ghost-emoji';
+  b.className = '';
+
+  if (status === 'ERROR') {
+    g.textContent = '😡'; g.style.filter = 'drop-shadow(0 0 14px #ff3a3a)';
+    g.classList.add('ghost-error');
+    b.className = 'error'; t.textContent = '¡ERRORES DETECTADOS!';
+  } else if (status === 'WARN') {
+    g.textContent = '😬'; g.style.filter = 'drop-shadow(0 0 12px #ffb020)';
+    g.classList.add('ghost-warn');
+    b.className = 'warn'; t.textContent = 'ADVERTENCIAS ACTIVAS';
+  } else {
+    g.textContent = '👻'; g.style.filter = 'drop-shadow(0 0 10px #00ff9d)';
+    g.classList.add('ghost-ok');
+    t.textContent = 'TODO EN ORDEN ✓';
+  }
+}
+
+// ═══════════════════════════
+// LISTA DE ARCHIVOS
+// ═══════════════════════════
+function extClass(ext) {
+  var map = { '.js':'e-js','.mjs':'e-js','.cjs':'e-js','.ts':'e-ts','.html':'e-html','.htm':'e-html','.css':'e-css','.scss':'e-css','.less':'e-css','.json':'e-json' };
+  return map[ext] || 'e-file';
+}
+function extLabel(ext) {
+  var map = { '.js':'JS','.mjs':'JS','.cjs':'JS','.ts':'TS','.html':'HTML','.htm':'HTML','.css':'CSS','.scss':'CSS','.less':'CSS','.json':'JSON' };
+  return map[ext] || ext.replace('.','').toUpperCase().substring(0,4);
+}
+
+function renderFileList(files) {
+  var wrap = document.getElementById('fileList');
+  if (!files.length) {
+    wrap.innerHTML = '<div class="empty" style="height:160px"><div class="big">📂</div><p>SIN ARCHIVOS</p></div>';
+    return;
+  }
+
+  // Ordenar: errores primero
+  var sorted = files.slice().sort(function(a,b) {
+    var o = { ERROR:0, WARN:1, OK:2 };
+    return (o[a.status]||2) - (o[b.status]||2);
+  });
+
+  var html = '';
+  sorted.forEach(function(f) {
+    var ec   = extClass(f.ext);
+    var el   = extLabel(f.ext);
+    var act  = f.name === currentFile ? ' active' : '';
+    var hErr = f.status === 'ERROR' ? ' has-error' : '';
+    var hW   = f.status === 'WARN'  ? ' has-warn'  : '';
+
+    var badge = '';
+    if (f.errorCount > 0)
+      badge = '<span class="count-badge cb-err">' + f.errorCount + 'E</span>';
+    else if (f.warningCount > 0)
+      badge = '<span class="count-badge cb-warn">' + f.warningCount + 'W</span>';
+    else
+      badge = '<span class="count-badge cb-ok">✓</span>';
+
+    html += '<div class="file-row' + act + hErr + hW + '" onclick="selectFile(\'' + esc(f.name) + '\')" title="' + esc(f.name) + '">'
+          + '<span class="ext-badge ' + ec + '">' + el + '</span>'
+          + '<span class="file-name">' + esc(f.name) + '</span>'
+          + badge
+          + '</div>';
+  });
+
+  wrap.innerHTML = html;
+}
+
+function findFile(files, name) {
+  for (var i = 0; i < files.length; i++) {
+    if (files[i].name === name) return files[i];
+  }
+  return null;
+}
+
+// ═══════════════════════════
+// SELECCIONAR ARCHIVO
+// ═══════════════════════════
+function selectFile(name) {
+  currentFile = name;
+  if (allData && allData.files) {
+    renderFileList(allData.files);
+    var f = findFile(allData.files, name);
+    if (f) renderFileView(f);
+  }
+}
+
+// ═══════════════════════════
+// VISTA DE CODIGO
+// ═══════════════════════════
+function renderFileView(f) {
+  document.getElementById('activeFileName').textContent = f.name;
+
+  // Construir mapa de issues por linea
+  var lineIssues  = {};
+  var lineFlow    = {};
+
+  var allIssues = [];
+  (f.errors||[]).forEach(function(e) {
+    allIssues.push(Object.assign({}, e, { _cat: 'error' }));
+  });
+  (f.warnings||[]).forEach(function(w) {
+    allIssues.push(Object.assign({}, w, { _cat: w.severity === 'warn' ? 'warn' : 'info' }));
+  });
+
+  allIssues.forEach(function(iss) {
+    if (!lineIssues[iss.line]) lineIssues[iss.line] = [];
+    lineIssues[iss.line].push(iss);
+  });
+
+  (f.analysis||[]).forEach(function(a) {
+    lineFlow[a.line] = a;
+  });
+
+  var lines = (f.source||'').split('\n');
+
+  document.getElementById('codeInfo').textContent =
+    lines.length + ' LINEAS · ' + (f.errorCount||0) + ' ERRORES · ' + (f.warningCount||0) + ' AVISOS';
+
+  if (!lines.length || (lines.length === 1 && !lines[0])) {
+    document.getElementById('codeScroll').innerHTML = '<div class="empty"><div class="big">📄</div><p>ARCHIVO VACIO</p></div>';
+  } else {
+    var html = '';
+    lines.forEach(function(content, idx) {
+      var ln     = idx + 1;
+      var issues = lineIssues[ln] || [];
+      var flow   = lineFlow[ln];
+
+      var rowClass = 'code-line';
+      var hasErr   = issues.some(function(i) { return i._cat === 'error'; });
+      var hasWarn  = issues.some(function(i) { return i._cat === 'warn'; });
+      var hasInfo  = issues.some(function(i) { return i._cat === 'info'; });
+      if (hasErr)       rowClass += ' line-error';
+      else if (hasWarn) rowClass += ' line-warn';
+      else if (hasInfo) rowClass += ' line-info';
+      else if (flow)    rowClass += ' line-flow';
+
+      var ann = '';
+      if (issues.length) {
+        var top = issues[0];
+        var tc  = top._cat === 'error' ? 'at-err' : top._cat === 'warn' ? 'at-warn' : 'at-info';
+        var lbl = (top.type||'').substring(0, 22);
+        var msg = (top.message||'').substring(0, 52) + (top.message&&top.message.length>52?'…':'');
+        ann = '<div class="ann"><span class="ann-tag ' + tc + '">' + esc(lbl) + '</span><span class="ann-msg">' + esc(msg) + '</span></div>';
+      } else if (flow) {
+        var fc = flow.style === 'neon-green' ? 'at-green' : flow.style === 'neon-red' ? 'at-red' : flow.style === 'neon-blue' ? 'at-blue' : 'at-orange';
+        ann = '<div class="ann"><span class="ann-tag ' + fc + '">➔ ' + esc(flow.label||'') + '</span></div>';
+      }
+
+      html += '<div class="' + rowClass + '" id="ln' + ln + '">'
+            + '<div class="ln">' + ln + '</div>'
+            + '<div class="lc">' + escCode(content) + '</div>'
+            + ann
+            + '</div>';
+    });
+    document.getElementById('codeScroll').innerHTML = html;
+  }
+
+  // Renderizar issues
+  renderIssues(allIssues, f.name);
+}
+
+// ═══════════════════════════
+// PANEL DE ISSUES
+// ═══════════════════════════
+function setFilter(f) {
+  filter = f;
+  document.getElementById('fAll').className  = 'ftab' + (f==='all'  ?' on':'');
+  document.getElementById('fErr').className  = 'ftab' + (f==='error'?' on-err':'');
+  document.getElementById('fWarn').className = 'ftab' + (f==='warn' ?' on-warn':'');
+  document.getElementById('fInfo').className = 'ftab' + (f==='info' ?' on':'');
+
+  if (allData && currentFile) {
+    var file = findFile(allData.files||[], currentFile);
+    if (file) {
+      var all = [];
+      (file.errors||[]).forEach(function(e) { all.push(Object.assign({},e,{_cat:'error'})); });
+      (file.warnings||[]).forEach(function(w) { all.push(Object.assign({},w,{_cat:w.severity==='warn'?'warn':'info'})); });
+      renderIssues(all, currentFile);
+    }
+  }
+}
+
+function renderIssues(allIssues, fileName) {
+  var filtered = allIssues;
+  if (filter === 'error') filtered = allIssues.filter(function(i){ return i._cat === 'error'; });
+  if (filter === 'warn')  filtered = allIssues.filter(function(i){ return i._cat === 'warn'; });
+  if (filter === 'info')  filtered = allIssues.filter(function(i){ return i._cat === 'info'; });
+
+  document.getElementById('issueCount').textContent = filtered.length;
+
+  if (!filtered.length) {
+    document.getElementById('issuesList').innerHTML =
+      '<div class="empty"><div class="big">✅</div><p>SIN PROBLEMAS EN ESTE FILTRO</p></div>';
+    return;
+  }
+
+  var html = '';
+  filtered.forEach(function(iss) {
+    var ico  = iss._cat === 'error' ? '🔴' : iss._cat === 'warn' ? '🟡' : '🔵';
+    var tc   = iss._cat === 'error' ? 'it-e' : iss._cat === 'warn' ? 'it-w' : 'it-i';
+    var sev  = iss._cat === 'error' ? 'ERROR' : iss._cat === 'warn' ? 'ADVERTENCIA' : 'INFO';
+
+    html += '<div class="issue" onclick="scrollToLine(' + iss.line + ')">'
+          + '<div class="issue-ico">' + ico + '</div>'
+          + '<div class="issue-body">'
+          + '<div class="issue-type ' + tc + '">' + esc(iss.type||sev) + '</div>'
+          + '<div class="issue-msg">' + esc(iss.message||'Sin descripcion') + '</div>'
+          + '<div class="issue-loc">Linea ' + iss.line + (iss.col ? ', Columna ' + iss.col : '') + ' · ' + esc(fileName) + '</div>'
+          + '</div></div>';
+  });
+
+  document.getElementById('issuesList').innerHTML = html;
+}
+
+function scrollToLine(ln) {
+  var el = document.getElementById('ln' + ln);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.style.outline = '1px solid var(--purple)';
+    setTimeout(function() { el.style.outline = ''; }, 2000);
+  }
+}
+
+// ═══════════════════════════
+// UTILS
+// ═══════════════════════════
+function esc(s) {
+  if (typeof s !== 'string') return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function escCode(s) {
+  if (typeof s !== 'string') return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+  </script>
+</body>
+
+</html>

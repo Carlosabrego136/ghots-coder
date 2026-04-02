@@ -1,0 +1,8 @@
+node_modules/
+.git/
+.DS_Store
+analisis.json
+node-v14.17.0-darwin-x64/
+node-v14.17.0-darwin-x64.tar.gz
+demo.mov
+package-lock.json
