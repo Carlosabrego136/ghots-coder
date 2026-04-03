@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 /**
- * GHOTS-CODER CLI v3.0 — By Faiiryz
- * Modo numerico en IDE, flechas en terminal nativa
- * Con menu principal para volver a elegir archivo
+ * GHOTS-CODER CLI v5.0 — By Faiiryz
+ * Analisis estatico predictivo — funciona en cualquier terminal
  */
 
 var childProcess = require("child_process");
@@ -16,121 +15,168 @@ var readline = require("readline");
 var isLegacy = os.totalmem() < 5000000000;
 var isInteractive = process.stdin.isTTY;
 
+// El directorio del proyecto es donde el usuario ejecuta 'ghots'
+// Se captura ANTES de cualquier chdir
+var PROJECT_DIR = process.cwd();
+
 var SUPPORTED = [".js", ".mjs", ".cjs", ".ts", ".html", ".htm", ".json", ".css", ".scss", ".less"];
-var IGNORE_DIRS = ["node_modules", ".git", "dist", "build", ".next", ".cache", "coverage"];
-var IGNORE_FILES = ["analisis.json", "package-lock.json"];
+var IGNORE_DIRS = ["node_modules", ".git", "dist", "build", ".next", ".cache", "coverage",
+  "__pycache__", ".dart_tool", "android", "ios", ".gradle", "Pods"];
+var IGNORE_FILES = ["analisis.json", "package-lock.json", "yarn.lock", "pubspec.lock"];
 
-// ── Utilidades ───────────────────────────────────────────
-var C = {
-  reset: "\x1b[0m", bright: "\x1b[1m", dim: "\x1b[2m",
-  green: "\x1b[38;5;84m", red: "\x1b[38;5;196m",
-  yellow: "\x1b[38;5;220m", cyan: "\x1b[38;5;51m",
-  purple: "\x1b[38;5;141m", white: "\x1b[97m", gray: "\x1b[38;5;244m"
-};
+// ── Colores ANSI estandar ─────────────────────────────────
+var R = "\x1b[0m";
+var BOLD = function (t) { return "\x1b[1m" + t + R; };
+var RED = function (t) { return "\x1b[31m" + t + R; };
+var GRN = function (t) { return "\x1b[32m" + t + R; };
+var YLW = function (t) { return "\x1b[33m" + t + R; };
+var CYN = function (t) { return "\x1b[36m" + t + R; };
+var MAG = function (t) { return "\x1b[35m" + t + R; };
+var GRY = function (t) { return "\x1b[90m" + t + R; };
 
-function clr(c, t) { return c + t + "\x1b[0m"; }
-function bold(t) { return "\x1b[1m" + t + "\x1b[0m"; }
-function dim(t) { return "\x1b[2m" + t + "\x1b[0m"; }
-
+// ── Escanear archivos del proyecto ────────────────────────
 function scanFiles() {
   var results = [];
-  function walk(d) {
+  function walk(dir) {
     var entries;
-    try { entries = fs.readdirSync(d); } catch (e) { return; }
-    for (var i = 0; i < entries.length; i++) {
-      var e = entries[i];
-      if (IGNORE_DIRS.indexOf(e) !== -1) continue;
-      var full = path.join(d, e);
+    try { entries = fs.readdirSync(dir); } catch (e) { return; }
+    entries.forEach(function (name) {
+      if (IGNORE_DIRS.indexOf(name) !== -1) return;
+      if (IGNORE_FILES.indexOf(name) !== -1) return;
+      var full = path.join(dir, name);
       var stat;
-      try { stat = fs.statSync(full); } catch (e2) { continue; }
-      if (stat.isDirectory()) { walk(full); continue; }
-      if (IGNORE_FILES.indexOf(e) !== -1) continue;
-      if (SUPPORTED.indexOf(path.extname(e).toLowerCase()) !== -1)
-        results.push(path.relative(".", full));
-    }
+      try { stat = fs.statSync(full); } catch (e) { return; }
+      if (stat.isDirectory()) { walk(full); return; }
+      var ext = path.extname(name).toLowerCase();
+      if (SUPPORTED.indexOf(ext) !== -1)
+        results.push(path.relative(PROJECT_DIR, full).replace(/\\/g, "/"));
+    });
   }
-  walk(".");
+  walk(PROJECT_DIR);
   return results;
 }
 
-function extIcon(ext) {
-  if ([".js", ".mjs", ".cjs"].indexOf(ext) !== -1) return clr("\x1b[38;5;220m", "JS  ");
-  if (ext === ".ts") return clr("\x1b[38;5;51m", "TS  ");
-  if ([".html", ".htm"].indexOf(ext) !== -1) return clr("\x1b[38;5;208m", "HTML");
-  if ([".css", ".scss", ".less"].indexOf(ext) !== -1) return clr("\x1b[38;5;141m", "CSS ");
-  if (ext === ".json") return clr("\x1b[38;5;84m", "JSON");
-  return dim("FILE");
+function extLabel(ext) {
+  var map = {
+    ".js": "JS ", ".mjs": "JS ", ".cjs": "JS ", ".ts": "TS ",
+    ".html": "HTML", ".htm": "HTML", ".css": "CSS ", ".scss": "CSS ",
+    ".less": "CSS ", ".json": "JSON"
+  };
+  return map[ext] || "FILE";
+}
+
+function extColor(ext) {
+  if ([".js", ".mjs", ".cjs"].indexOf(ext) !== -1) return YLW;
+  if (ext === ".ts") return CYN;
+  if ([".html", ".htm"].indexOf(ext) !== -1) return RED;
+  if ([".css", ".scss", ".less"].indexOf(ext) !== -1) return MAG;
+  if (ext === ".json") return GRN;
+  return GRY;
 }
 
 function printHeader() {
   console.log();
-  console.log(clr("\x1b[38;5;141m", "  +====================================================+"));
-  console.log(clr("\x1b[38;5;141m", "  |") + bold("      👻  GHOTS-CODER CLI v3.0  ·  By Faiiryz    ") + clr("\x1b[38;5;141m", "  |"));
-  console.log(clr("\x1b[38;5;141m", "  |") + dim("        Motor de Analisis Estatico Predictivo     ") + clr("\x1b[38;5;141m", "  |"));
-  console.log(clr("\x1b[38;5;141m", "  +====================================================+"));
-  console.log("  MODO: " + (isLegacy ? clr("\x1b[38;5;220m", "LEGACY (<=4GB RAM)") : clr("\x1b[38;5;84m", "ULTRA")));
-  console.log("  DIR:  " + clr("\x1b[97m", process.cwd()));
-  console.log(clr("\x1b[38;5;141m", "  +====================================================+"));
+  console.log(MAG("  +====================================================+"));
+  console.log(MAG("  |") + BOLD("      👻  GHOTS-CODER  v5.0  ·  By Faiiryz        ") + MAG("|"));
+  console.log(MAG("  |") + GRY("        Motor de Analisis Estatico Predictivo     ") + MAG("|"));
+  console.log(MAG("  +====================================================+"));
+  console.log("  MODO:  " + (isLegacy ? YLW("LEGACY (<=4GB RAM)") : GRN("ULTRA")));
+  console.log("  DIR:   " + BOLD(PROJECT_DIR));
+  console.log(MAG("  +====================================================+"));
   console.log();
 }
 
 var motorProcess = null;
 var serverProcess = null;
+var serverPort = 8080;
 
 function stopEngine() {
-  if (motorProcess) { try { motorProcess.kill('SIGTERM'); } catch (e) { } motorProcess = null; }
-  // No matamos el servidor si ya está corriendo para evitar lag en el dashboard
+  if (motorProcess) {
+    try { motorProcess.kill("SIGTERM"); } catch (e) { }
+    motorProcess = null;
+  }
+}
+
+function killPort(port, cb) {
+  exec("lsof -ti:" + port + " | xargs kill -9 2>/dev/null; true", function () { cb(); });
 }
 
 function launchEngine(fileToAnalyze, callback) {
   stopEngine();
 
   console.log();
-  console.log(clr("\x1b[38;5;84m", "  ✅  Archivo: " + bold(fileToAnalyze)));
-  console.log(clr("\x1b[38;5;51m", "  🔍  Analizando proyecto..."));
-  console.log(clr("\x1b[38;5;141m", "  📡  Dashboard: http://127.0.0.1:8080/ghots.html"));
-  console.log(dim("  Ctrl+C para detener · escribe 'menu' para volver\n"));
+  console.log(GRN("  ✔  Archivo: ") + BOLD(fileToAnalyze));
+  console.log(CYN("  ⟳  Proyecto: ") + BOLD(PROJECT_DIR));
+  console.log(CYN("  ◉  Dashboard: ") + BOLD("http://127.0.0.1:" + serverPort + "/ghots.html"));
+  console.log(GRY("  Ctrl+C para detener  ·  escribe 'menu' para cambiar archivo\n"));
 
   var motorPath = path.join(__dirname, "motor.js");
+
   motorProcess = spawn("node", [motorPath, fileToAnalyze], {
-    env: Object.assign({}, process.env, { GHOTS_MODE: isLegacy ? "legacy" : "ultra" }),
-    shell: true
+    env: Object.assign({}, process.env, {
+      GHOTS_MODE: isLegacy ? "legacy" : "ultra",
+      GHOTS_PROJECT: PROJECT_DIR
+    }),
+    cwd: PROJECT_DIR,
+    shell: false
   });
 
-  motorProcess.stdout.on("data", function (d) { process.stdout.write("  [👻] " + d); });
-  motorProcess.stderr.on("data", function (d) { process.stderr.write("  [⚠] " + d); });
+  motorProcess.stdout.on("data", function (d) { process.stdout.write(d.toString()); });
+  motorProcess.stderr.on("data", function (d) { process.stderr.write(YLW("  [!] ") + d.toString()); });
+  motorProcess.on("error", function (e) { console.error(RED("  [MOTOR ERROR] ") + e.message); });
 
-  // Levantar servidor HTTP solo si no existe
+  // Copiar ghots.html al proyecto del usuario (siempre la version mas nueva)
+  var ghotsSource = path.join(__dirname, "ghots.html");
+  var ghotsDest = path.join(PROJECT_DIR, "ghots.html");
+  try {
+    if (path.resolve(ghotsSource) !== path.resolve(ghotsDest)) {
+      fs.writeFileSync(ghotsDest, fs.readFileSync(ghotsSource));
+    }
+  } catch (e) { }
+
+  // Levantar servidor HTTP en el proyecto
   if (!serverProcess) {
-    serverProcess = exec("npx http-server . -p 8080 --cors -s --no-dotfiles");
+    killPort(serverPort, function () {
+      setTimeout(function () {
+        serverProcess = exec(
+          "npx http-server " + JSON.stringify(PROJECT_DIR) + " -p " + serverPort + " --cors -s --no-dotfiles",
+          { env: process.env }
+        );
+        // abrir dashboard despues de que el servidor arranque
+        setTimeout(function () {
+          var url = "http://127.0.0.1:" + serverPort + "/ghots.html";
+          var openCmd = process.platform === "darwin" ? "open"
+            : process.platform === "win32" ? "start"
+              : "xdg-open";
+          exec(openCmd + " " + url);
+          console.log(GRN("  ✔  Dashboard abierto"));
+          console.log();
+          if (callback) callback();
+        }, 1500);
+      }, 600);
+    });
+  } else {
+    setTimeout(function () {
+      if (callback) callback();
+    }, 500);
   }
-
-  setTimeout(function () {
-    var url = "http://127.0.0.1:8080/ghots.html";
-    var openCmd = process.platform === "darwin" ? "open" : process.platform === "win32" ? "start" : "xdg-open";
-    exec(openCmd + " " + url);
-    console.log(clr("\x1b[38;5;84m", "  🌐  Dashboard abierto en el navegador"));
-    console.log();
-    if (callback) callback();
-  }, 2000);
 }
 
-// ── Selector numérico (IDE) ───────────────────────────────
+// ── Selector numerico (IDE / no-TTY) ─────────────────────
 function showMenuNumeric(files, callback) {
-  console.log(bold(clr("\x1b[97m", "  📂  ARCHIVOS DEL PROYECTO")));
-  console.log(dim("  Escribe el NUMERO y presiona Enter · 0 = salir"));
-  console.log(dim("  " + "-".repeat(52)));
+  console.log(BOLD("  ARCHIVOS DEL PROYECTO"));
+  console.log(GRY("  Escribe el NUMERO y presiona Enter  ·  0 = salir"));
+  console.log(GRY("  " + "─".repeat(52)));
   console.log();
-
   files.forEach(function (f, i) {
     var ext = path.extname(f).toLowerCase();
-    var num = clr("\x1b[38;5;84m", bold(String(i + 1).padStart(2, " ")));
-    console.log("  " + num + "  [" + extIcon(ext) + "]  " + clr("\x1b[97m", f));
+    var col = extColor(ext);
+    var num = GRN(BOLD(String(i + 1).padStart(2, " ")));
+    console.log("  " + num + "  " + col("[" + extLabel(ext) + "]") + "  " + BOLD(f));
   });
-
   console.log();
-  console.log(dim("  " + "-".repeat(52)));
-  process.stdout.write(clr("\x1b[38;5;51m", "\n  Numero del archivo: "));
+  console.log(GRY("  " + "─".repeat(52)));
+  process.stdout.write(CYN("\n  Numero del archivo: "));
 
   var rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: false });
   rl.once("line", function (line) {
@@ -138,42 +184,40 @@ function showMenuNumeric(files, callback) {
     var num = parseInt(line.trim(), 10);
     if (num === 0) { console.log("\n  👋  Hasta luego.\n"); process.exit(0); }
     if (isNaN(num) || num < 1 || num > files.length) {
-      console.log(clr("\x1b[38;5;196m", "\n  ❌  Numero invalido. Rango: 1-" + files.length));
-      setTimeout(function () { showMenuNumeric(files, callback); }, 800);
+      console.log(RED("\n  ✖  Numero invalido (1-" + files.length + ")"));
+      setTimeout(function () { showMenuNumeric(files, callback); }, 600);
       return;
     }
     callback(files[num - 1]);
   });
 }
 
-// ── Selector con flechas (terminal nativa) ───────────────
+// ── Selector con flechas (terminal interactiva) ──────────
 function showMenuInteractive(files, callback) {
   var selected = 0;
-
   function render() {
     console.clear();
     printHeader();
-    console.log(bold(clr("\x1b[97m", "  📂  ARCHIVOS DEL PROYECTO")));
-    console.log(dim("  Flechas ↑↓ · ENTER seleccionar · Q salir"));
-    console.log(dim("  " + "-".repeat(52)));
+    console.log(BOLD("  ARCHIVOS DEL PROYECTO"));
+    console.log(GRY("  ↑↓ Navegar  ·  ENTER Seleccionar  ·  Q Salir"));
+    console.log(GRY("  " + "─".repeat(52)));
     console.log();
     files.forEach(function (f, i) {
       var ext = path.extname(f).toLowerCase();
+      var col = extColor(ext);
       var isSel = i === selected;
-      var prefix = isSel ? clr("\x1b[38;5;84m", " > ") + bold(clr("\x1b[97m", f)) : "    " + dim(f);
-      console.log("  [" + extIcon(ext) + "] " + prefix);
+      var line = isSel ? GRN(" > ") + BOLD(f) : "    " + GRY(f);
+      console.log("  " + col("[" + extLabel(ext) + "]") + " " + line);
     });
     console.log();
-    console.log(dim("  " + "-".repeat(52)));
-    console.log("  " + clr("\x1b[38;5;84m", "[ENTER]") + " Analizar   " + clr("\x1b[38;5;196m", "[Q]") + " Salir");
+    console.log(GRY("  " + "─".repeat(52)));
+    console.log("  " + GRN("[ENTER]") + " Analizar   " + RED("[Q]") + " Salir");
   }
-
   render();
   if (process.stdin.isTTY) {
     readline.emitKeypressEvents(process.stdin);
     process.stdin.setRawMode(true);
   }
-
   function handler(_, key) {
     if (!key) return;
     if (key.name === "up" && selected > 0) selected--;
@@ -194,31 +238,38 @@ function showMenuInteractive(files, callback) {
   process.stdin.on("keypress", handler);
 }
 
-// ── Menú principal con opción de volver ──────────────────
+// ── Menu principal ────────────────────────────────────────
 function mainMenu() {
   console.clear();
   printHeader();
   var files = scanFiles();
 
   if (!files.length) {
-    console.log(clr("\x1b[38;5;196m", "  ❌  No se encontraron archivos compatibles.\n"));
+    console.log(RED("  ✖  No se encontraron archivos compatibles en:\n  " + PROJECT_DIR + "\n"));
     process.exit(1);
   }
 
   function onSelected(file) {
     launchEngine(file, function () {
+      // Esperar comando del usuario
       var rl2 = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: false });
-      process.stdout.write(clr("\x1b[38;5;51m", "\n  Escribe 'menu' para cambiar archivo o 'q' para salir: "));
+      process.stdout.write(CYN("\n  'menu' = cambiar archivo  ·  'q' = salir: "));
       rl2.on("line", function (line) {
         rl2.close();
         var cmd = line.trim().toLowerCase();
         if (cmd === "menu" || cmd === "m") {
           stopEngine();
+          serverProcess = null;  // permitir que se reinicie el servidor con el nuevo proyecto
           mainMenu();
-        } else if (cmd === "q" || cmd === "quit") {
+        } else if (cmd === "q" || cmd === "quit" || cmd === "exit") {
           stopEngine();
           console.log("  👋  Hasta luego.\n");
           process.exit(0);
+        } else {
+          // Ignorar otros inputs y volver a pedir
+          process.stdout.write(CYN("  'menu' o 'q': "));
+          rl2 = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: false });
+          rl2.once("line", arguments.callee.bind(null));
         }
       });
     });
@@ -229,10 +280,13 @@ function mainMenu() {
 }
 
 // ── Arranque ─────────────────────────────────────────────
-var argFile = process.argv;
-if (argFile && fs.existsSync(argFile)) {
+var argFile = process.argv[2];
+if (argFile && fs.existsSync(path.resolve(PROJECT_DIR, argFile))) {
   printHeader();
   launchEngine(argFile, null);
+} else if (argFile && fs.existsSync(argFile)) {
+  printHeader();
+  launchEngine(path.relative(PROJECT_DIR, argFile), null);
 } else {
   mainMenu();
 }
